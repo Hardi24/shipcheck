@@ -24,10 +24,10 @@ export const handler = makeResolver({
 
   getReadiness: async ({ payload }) => {
     const notes = [];
-    if (!payload?.projectKey || !payload?.versionId) {
+    if (!payload?.projectKey || !payload?.versionName) {
       return { ok: false, error: "Pick a project and a version first.", score: null };
     }
-    const found = await getVersionIssues(payload.projectKey, payload.versionId);
+    const found = await getVersionIssues(payload.projectKey, payload.versionName);
     if (!found.ok) return { ok: false, error: found.error, score: null };
     const result = computeReadiness({ issues: found.issues, goals: [] });
     return { ok: true, notes, ...result };

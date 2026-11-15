@@ -45,9 +45,13 @@ export async function getIssue(issueKey) {
 }
 
 // All issues in one fixVersion, paged through JQL search.
-export async function getVersionIssues(projectKey, versionId) {
+// NOTE: JQL `fixVersion` matches on the version NAME (quoted), not the
+// numeric version id — `fixVersion = 10000` is a 400. Callers must pass the
+// version name.
+export async function getVersionIssues(projectKey, versionName) {
   const fields = "summary,issuetype,priority,status,assignee,updated";
-  const jql = `project = ${projectKey} AND fixVersion = ${versionId} ORDER BY priority DESC, updated ASC`;
+  const safeName = String(versionName).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const jql = `project = ${projectKey} AND fixVersion = "${safeName}" ORDER BY priority DESC, updated ASC`;
   const issues = [];
   let startAt = 0;
   for (let page = 0; page < 10; page++) {

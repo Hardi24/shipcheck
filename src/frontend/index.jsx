@@ -11,7 +11,7 @@ function ReadinessView({ projectKey, versionId, versionName }) {
     if (!projectKey || !versionId) return;
     setData(null);
     setError(null);
-    invoke("getReadiness", { projectKey, versionId })
+    invoke("getReadiness", { projectKey, versionId, versionName })
       .then((r) => (r.ok ? setData(r) : setError(r.error || "Could not load readiness.")))
       .catch((e) => setError(String(e?.message || e)));
   }, [projectKey, versionId]);
@@ -85,15 +85,17 @@ function Dashboard() {
       <Text>Pick a project and a release version. ShipCheck scores how ready it is to ship, from live Jira data.</Text>
       <Select
         label="Project"
+        name="project"
         value={projectKey}
-        onChange={(e) => setProjectKey(e.target.value)}
+        onChange={(option) => setProjectKey(option?.value || "")}
         options={projects.map((p) => ({ label: `${p.name} (${p.key})`, value: p.key }))}
       />
       {projectKey && versions.length > 0 && (
         <Select
           label="Version"
+          name="version"
           value={versionId}
-          onChange={(e) => setVersionId(e.target.value)}
+          onChange={(option) => setVersionId(option?.value || "")}
           options={versions.map((v) => ({ label: `${v.name}${v.released ? " (released)" : ""}`, value: v.id }))}
         />
       )}

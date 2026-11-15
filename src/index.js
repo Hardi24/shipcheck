@@ -59,7 +59,7 @@ async function buildReadiness(payload) {
   if (!resolved.ok) return { error: resolved.error };
   const { projectKey, version } = resolved;
 
-  const found = await getVersionIssues(projectKey, version.id);
+  const found = await getVersionIssues(projectKey, version.name);
   if (!found.ok) return { error: found.error };
   const issues = found.issues;
 
