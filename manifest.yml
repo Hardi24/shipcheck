@@ -1,0 +1,121 @@
+modules:
+  jira:projectPage:
+    - key: shipcheck-release-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: ShipCheck — Release Readiness
+  jira:issuePanel:
+    - key: shipcheck-issue-panel
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: ShipCheck Readiness
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  rovo:agent:
+    - key: shipcheck-agent
+      name: ShipCheck
+      description: Answers whether a release is ready to ship, with evidence from Jira
+        and Teamwork Graph.
+      prompt: resource:agent-prompt;prompt.md
+      conversationStarters:
+        - Can we ship 2.4 on Friday?
+        - What is blocking the release?
+        - Who owns the open blockers?
+      actions:
+        - get-readiness
+        - list-blockers
+        - release-summary
+  action:
+    - key: get-readiness
+      name: Get release readiness
+      function: getReadiness
+      actionVerb: GET
+      description: |
+        Scores how ready a Jira release is to ship, 0-100, from open blockers, bugs, unassigned work and linked goals. Use for "can we ship X" or "is version 2.4 ready".
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key, for example DEMO. Leave empty to use the project
+            on screen.
+        versionName:
+          title: Version name
+          type: string
+          required: false
+          description: Release version name, for example 2.4. Leave empty to use the
+            latest unreleased version of the project.
+    - key: list-blockers
+      name: List release blockers
+      function: listBlockers
+      actionVerb: GET
+      description: |
+        Lists the open items blocking a Jira release: critical/high bugs, unassigned work and flagged items, with owner and status.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key, for example DEMO. Leave empty to use the project
+            on screen.
+        versionName:
+          title: Version name
+          type: string
+          required: false
+          description: Release version name, for example 2.4. Leave empty to use the
+            latest unreleased version of the project.
+    - key: release-summary
+      name: Summarize release readiness
+      function: releaseSummary
+      actionVerb: GET
+      description: |
+        Writes a short go / no-go summary for a Jira release: verdict, score, top three blockers and their owners.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key, for example DEMO. Leave empty to use the project
+            on screen.
+        versionName:
+          title: Version name
+          type: string
+          required: false
+          description: Release version name, for example 2.4. Leave empty to use the
+            latest unreleased version of the project.
+  rovo:mcp:
+    - key: shipcheck-mcp
+      name: ShipCheck MCP
+      tools:
+        - get-readiness
+        - list-blockers
+  function:
+    - key: resolver
+      handler: resolvers/index.handler
+    - key: getReadiness
+      handler: index.getReadiness
+    - key: listBlockers
+      handler: index.listBlockers
+    - key: releaseSummary
+      handler: index.releaseSummary
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+  - key: agent-prompt
+    path: prompts
+permissions:
+  scopes:
+    - read:jira-work
+    - read:jira-user
+    - read:graph:issue:jira
+    - read:graph:issue-status:jira
+    - read:graph:user:atlassian
+    - read:graph:team:atlassian
+    - read:graph:goal:atlassian
+app:
+  runtime:
+    name: nodejs22.x
+  id: ari:cloud:ecosystem::app/c9cb4125-fab6-40d5-90ea-b8c14e440c41

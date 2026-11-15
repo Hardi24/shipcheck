@@ -1,0 +1,1 @@
+{"dependencies":{"@forge/api":"^8.4.0","@forge/bridge":"^5.3.0","@forge/react":"^11.3.0","@forge/resolver":"^1.6.0"},"description":"ShipCheck — Release Readiness Agent for Jira (Codegeist 2026)","main":"src/index.js","name":"shipcheck","private":true,"scripts":{"test":"node --test test/readiness.test.js"},"type":"module","version":"0.1.0"}
