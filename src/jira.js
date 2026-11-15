@@ -48,23 +48,28 @@ export async function getIssue(issueKey) {
 // NOTE: JQL `fixVersion` matches on the version NAME (quoted), not the
 // numeric version id — `fixVersion = 10000` is a 400. Callers must pass the
 // version name.
+// NOTE 2: the /rest/api/3/search/jql endpoint (new search API, CHANGE-2046)
+// does NOT accept `startAt` — sending it is a 400 "Invalid request payload".
+// Pagination is via `nextPageToken` (response field; `isLast` ends the loop).
 export async function getVersionIssues(projectKey, versionName) {
   const fields = "summary,issuetype,priority,status,assignee,updated";
   const safeName = String(versionName).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   const jql = `project = ${projectKey} AND fixVersion = "${safeName}" ORDER BY priority DESC, updated ASC`;
   const issues = [];
-  let startAt = 0;
+  let nextPageToken;
   for (let page = 0; page < 10; page++) {
+    const body = { jql, maxResults: 100, fields: fields.split(",") };
+    if (nextPageToken) body.nextPageToken = nextPageToken;
     const res = await api.asUser().requestJira(route`/rest/api/3/search/jql`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jql, startAt, maxResults: 100, fields: fields.split(",") }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) return { ok: false, error: `issue search failed (${res.status})`, issues: [] };
     const json = await res.json();
     for (const issue of json.issues || []) issues.push(normalizeIssue(issue));
-    startAt += (json.issues || []).length;
-    if (startAt >= (json.total ?? 0) || (json.issues || []).length === 0) break;
+    nextPageToken = json.nextPageToken;
+    if (!nextPageToken || json.isLast) break;
   }
   return { ok: true, issues };
 }

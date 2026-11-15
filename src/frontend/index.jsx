@@ -79,6 +79,8 @@ function Dashboard() {
   if (error) return <Text>{error}</Text>;
   if (projects.length === 0) return <Spinner size="medium" label="Loading projects…" />;
   const versionName = (versions.find((v) => v.id === versionId) || {}).name || "";
+  const projectOption = projects.find((p) => p.key === projectKey);
+  const versionOption = versions.find((v) => v.id === versionId);
   return (
     <Stack space="space.200">
       <Heading size="large">ShipCheck — Release Readiness</Heading>
@@ -86,7 +88,7 @@ function Dashboard() {
       <Select
         label="Project"
         name="project"
-        value={projectKey}
+        value={projectOption ? { label: `${projectOption.name} (${projectOption.key})`, value: projectOption.key } : null}
         onChange={(option) => setProjectKey(option?.value || "")}
         options={projects.map((p) => ({ label: `${p.name} (${p.key})`, value: p.key }))}
       />
@@ -94,7 +96,7 @@ function Dashboard() {
         <Select
           label="Version"
           name="version"
-          value={versionId}
+          value={versionOption ? { label: `${versionOption.name}${versionOption.released ? " (released)" : ""}`, value: versionOption.id } : null}
           onChange={(option) => setVersionId(option?.value || "")}
           options={versions.map((v) => ({ label: `${v.name}${v.released ? " (released)" : ""}`, value: v.id }))}
         />
