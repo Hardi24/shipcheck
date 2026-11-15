@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Text, Section, Stack, Heading, Button, Select, Table, Row, Cell, Lozenge, Spinner } from "@forge/react";
+import ForgeReconciler, { Text, Stack, Heading, Button, Select, List, ListItem, Lozenge, Spinner } from "@forge/react";
 import { invoke, view } from "@forge/bridge";
 
 const verdictTone = (verdict) => (verdict === "GO" ? "success" : verdict === "CAUTION" ? "inprogress" : "removed");
@@ -28,23 +28,18 @@ function ReadinessView({ projectKey, versionId, versionName }) {
         {data.counts.unassigned} unassigned).
       </Text>
       {data.checks.length > 0 && (
-        <Table>
-          <Row>
-            <Cell><Text>Check</Text></Cell>
-            <Cell><Text>Detail</Text></Cell>
-            <Cell><Text>Penalty</Text></Cell>
-          </Row>
+        <List>
           {data.checks.map((c) => (
-            <Row key={c.label}>
-              <Cell><Text>{c.label}</Text></Cell>
-              <Cell><Text>{c.detail}</Text></Cell>
-              <Cell><Text>−{c.penalty}</Text></Cell>
-            </Row>
+            <ListItem key={c.label}>
+              <Text>
+                {c.label} — {c.detail} (−{c.penalty})
+              </Text>
+            </ListItem>
           ))}
-        </Table>
+        </List>
       )}
       {data.blockers.length > 0 && (
-        <Section>
+        <Stack space="space.100">
           <Heading size="small">Blockers</Heading>
           {data.blockers.map((b) => (
             <Text key={b.key}>
@@ -52,7 +47,7 @@ function ReadinessView({ projectKey, versionId, versionName }) {
               {b.assignee ? `, ${b.assignee}` : ", no owner"})
             </Text>
           ))}
-        </Section>
+        </Stack>
       )}
       <Text>Ask the ShipCheck agent in Rovo chat: “Can we ship {versionName}?”</Text>
     </Stack>
